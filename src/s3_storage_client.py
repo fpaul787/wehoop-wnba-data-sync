@@ -149,10 +149,13 @@ def build_s3_storage_config_from_env() -> S3StorageConfig:
 
     load_dotenv()
 
+    region_name = (os.getenv("AWS_REGION") or "").strip() or None
+    endpoint_url = (os.getenv("AWS_S3_ENDPOINT_URL") or "").strip() or None
+
     return S3StorageConfig(
         bucket_name=os.getenv("AWS_S3_BUCKET", ""),
-        region_name=os.getenv("AWS_REGION"),
-        endpoint_url=os.getenv("AWS_S3_ENDPOINT_URL"),
+        region_name=region_name,
+        endpoint_url=endpoint_url,
         key_prefix=os.getenv("AWS_S3_KEY_PREFIX", ""),
         metadata_sha_key="github_sha",
     )
