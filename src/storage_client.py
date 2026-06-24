@@ -8,11 +8,12 @@ from typing import BinaryIO
 
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient
+from base_storage_client import BaseStorageClient
 from dotenv import load_dotenv
 
 
 @dataclass(frozen=True)
-class StorageConfig:
+class AzureStorageConfig:
     """Runtime configuration for Azure Blob storage access."""
 
     connection_string: str
@@ -20,10 +21,10 @@ class StorageConfig:
     metadata_sha_key: str = "github_sha"
 
 
-class StorageClient:
+class AzureStorageClient(BaseStorageClient):
     """Operations required by the sync service for blob state tracking."""
 
-    def __init__(self, config: StorageConfig) -> None:
+    def __init__(self, config: AzureStorageConfig) -> None:
         self.config = config
         self.connection_string = config.connection_string
         self.container_name = config.container_name
@@ -115,7 +116,7 @@ class StorageClient:
         return normalized_source
 
 
-def build_storage_config_from_env() -> StorageConfig:
+def build_storage_config_from_env() -> AzureStorageConfig:
     """Create storage config from environment variables."""
 
     load_dotenv()
@@ -123,14 +124,19 @@ def build_storage_config_from_env() -> StorageConfig:
     connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
     container_name = os.getenv("AZURE_STORAGE_CONTAINER", "")
 
-    return StorageConfig(
+    return AzureStorageConfig(
         connection_string=connection_string,
         container_name=container_name,
         metadata_sha_key="github_sha",
     )
 
 
-def build_storage_client_from_env() -> StorageClient:
+def build_storage_client_from_env() -> AzureStorageClient:
     """Create storage client from environment variables."""
 
-    return StorageClient(config=build_storage_config_from_env())
+    return AzureStorageClient(config=build_storage_config_from_env())
+
+
+# Backwards-compatible aliases for existing imports.
+StorageConfig = AzureStorageConfig
+StorageClient = AzureStorageClient
