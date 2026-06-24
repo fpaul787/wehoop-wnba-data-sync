@@ -20,7 +20,7 @@ jobs:
       GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet
       BLOB_STRIP_PREFIX: wnba/
       AZURE_STORAGE_CONTAINER: wehoop-wnba-storage
-      SYNC_MAX_FILES: ${{ inputs.sync_max_files }}
+      SYNC_MAX_FILES: ${{ github.event.inputs.sync_max_files || '' }}
 
     steps:
       - name: Checkout repository
