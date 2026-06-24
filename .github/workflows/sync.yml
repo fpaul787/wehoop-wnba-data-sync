@@ -1,0 +1,41 @@
+name: Sync WNBA Parquet Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      sync_max_files:
+        description: Optional cap for quick test runs
+        required: false
+        type: string
+  schedule:
+    - cron: "0 10 * * *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_OWNER: sportsdataverse
+      GITHUB_REPO: wehoop-wnba-data
+      GITHUB_BRANCH: main
+      GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet
+      BLOB_STRIP_PREFIX: wnba/
+      AZURE_STORAGE_CONTAINER: wehoop-wnba-storage
+      SYNC_MAX_FILES: ${{ inputs.sync_max_files }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+        run: python src/sync.py
