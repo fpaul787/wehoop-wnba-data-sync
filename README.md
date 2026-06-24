@@ -29,14 +29,6 @@ Optional with defaults:
 
 If both `GITHUB_BASE_PATHS` and `GITHUB_BASE_PATH` are set, `GITHUB_BASE_PATHS` is used.
 
-## Setup
-
-```bash
-python -m venv env
-source env/Scripts/activate
-pip install -r requirements.txt
-```
-
 ## Run examples
 
 Single path:
