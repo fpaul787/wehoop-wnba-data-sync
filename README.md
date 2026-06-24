@@ -1,1 +1,1 @@
-"# wehoop-wnba-data-sync" 
+# wehoop-wnba-data-sync
