@@ -47,9 +47,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
-
       - name: Print configuration
         run: |
           echo "STORAGE_BACKEND=$STORAGE_BACKEND"
