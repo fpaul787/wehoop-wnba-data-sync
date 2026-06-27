@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STORAGE_BACKEND: s3
-      GITHUB_OWNER: fpaul787
+      GITHUB_OWNER: sportsdataverse
       GITHUB_REPO: wehoop-wnba-data
       GITHUB_BRANCH: main
       GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet
@@ -49,6 +49,17 @@ jobs:
 
       - name: Verify AWS identity
         run: aws sts get-caller-identity
+
+      - name: Print configuration
+        run: |
+          echo "STORAGE_BACKEND=$STORAGE_BACKEND"
+          echo "GITHUB_OWNER=$GITHUB_OWNER"
+          echo "GITHUB_REPO=$GITHUB_REPO"
+          echo "GITHUB_BRANCH=$GITHUB_BRANCH"
+          echo "AWS_REGION=$AWS_REGION"
+          echo "AWS_S3_BUCKET=$AWS_S3_BUCKET"
+          echo "AWS_S3_KEY_PREFIX=$AWS_S3_KEY_PREFIX"
+          echo "SYNC_MAX_FILES=$SYNC_MAX_FILES"
 
       - name: Run sync
         env:
