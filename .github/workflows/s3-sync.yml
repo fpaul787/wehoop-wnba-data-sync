@@ -49,10 +49,13 @@ jobs:
 
       - name: Print configuration
         run: |
+          echo "GITHUB_REF=${{ github.ref }}"
+          echo "GITHUB_SHA=${{ github.sha }}"
           echo "STORAGE_BACKEND=$STORAGE_BACKEND"
           echo "GITHUB_OWNER=$GITHUB_OWNER"
           echo "GITHUB_REPO=$GITHUB_REPO"
           echo "GITHUB_BRANCH=$GITHUB_BRANCH"
+          echo "GITHUB_BASE_PATHS=$GITHUB_BASE_PATHS"
           echo "AWS_REGION=$AWS_REGION"
           echo "AWS_S3_BUCKET=$AWS_S3_BUCKET"
           echo "AWS_S3_KEY_PREFIX=$AWS_S3_KEY_PREFIX"
