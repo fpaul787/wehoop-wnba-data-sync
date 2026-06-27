@@ -225,6 +225,9 @@ def main() -> None:
     logging.info("sync_summary %s", json.dumps(summary))
     print(json.dumps(summary, indent=2))
 
+    if errored_files:
+        raise SystemExit(1)
+
 
 if __name__ == "__main__":
     main()
