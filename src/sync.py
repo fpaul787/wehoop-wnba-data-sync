@@ -12,6 +12,24 @@ from github_client import build_default_client
 import requests
 
 
+def _configure_logging() -> None:
+    """Configure app logging while suppressing noisy SDK HTTP wire logs."""
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+    # Keep SDK transport/request-header dumps out of CI logs.
+    noisy_loggers = (
+        "azure",
+        "azure.core",
+        "azure.core.pipeline",
+        "azure.core.pipeline.policies.http_logging_policy",
+        "azure.storage",
+        "urllib3",
+    )
+    for logger_name in noisy_loggers:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+
 def _build_storage_client_from_env() -> Any:
     """Build a storage client based on STORAGE_BACKEND setting."""
 
@@ -128,7 +146,7 @@ def _download_and_upload_file(
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    _configure_logging()
 
     start_time = time.perf_counter()
     branch = os.getenv("GITHUB_BRANCH", "main")
