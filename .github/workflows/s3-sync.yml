@@ -22,7 +22,7 @@ jobs:
       GITHUB_OWNER: sportsdataverse
       GITHUB_REPO: wehoop-wnba-data
       GITHUB_BRANCH: main
-      GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet,wnba/player_season_stats/parquet,wnba/player_box/parquet,wnba/schedules/parquet
+      GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet,wnba/player_season_stats/parquet,wnba/pbp/parquet
       BLOB_STRIP_PREFIX: wnba/
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_S3_BUCKET: ${{ vars.AWS_S3_BUCKET }}
