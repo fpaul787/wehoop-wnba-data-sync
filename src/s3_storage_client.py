@@ -63,11 +63,6 @@ class S3StorageClient(BaseStorageClient):
             error_code = exc.response.get("Error", {}).get("Code")
             if error_code in {"404", "NoSuchKey", "NotFound"}:
                 return False
-            if error_code == "403":
-                raise PermissionError(
-                    f"Access denied when checking object '{self._resolve_key(blob_name)}' in "
-                    f"bucket '{self.bucket_name}'. The role likely needs s3:GetObject access."
-                ) from exc
             raise
 
     def get_blob_metadata(self, blob_name: str) -> dict[str, str]:
@@ -79,11 +74,6 @@ class S3StorageClient(BaseStorageClient):
             error_code = exc.response.get("Error", {}).get("Code")
             if error_code in {"404", "NoSuchKey", "NotFound"}:
                 return {}
-            if error_code == "403":
-                raise PermissionError(
-                    f"Access denied when reading metadata for object '{self._resolve_key(blob_name)}' in "
-                    f"bucket '{self.bucket_name}'. The role likely needs s3:GetObject access."
-                ) from exc
             raise
 
         metadata = response.get("Metadata") or {}
