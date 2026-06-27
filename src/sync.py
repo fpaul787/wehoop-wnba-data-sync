@@ -1,4 +1,4 @@
-"""Incremental GitHub-to-Blob parquet sync entrypoint."""
+"""Incremental GitHub-to-storage parquet sync entrypoint."""
 
 from __future__ import annotations
 
@@ -11,7 +11,24 @@ from typing import Any
 from github_client import build_default_client
 import requests
 
-from storage_client import build_storage_client_from_env
+
+def _build_storage_client_from_env() -> Any:
+    """Build a storage client based on STORAGE_BACKEND setting."""
+
+    storage_backend = os.getenv("STORAGE_BACKEND", "azure").strip().lower()
+    if storage_backend == "azure":
+        from storage_client import build_storage_client_from_env
+
+        return build_storage_client_from_env()
+
+    if storage_backend == "s3":
+        from s3_storage_client import build_s3_storage_client_from_env
+
+        return build_s3_storage_client_from_env()
+
+    raise ValueError(
+        f"Invalid STORAGE_BACKEND='{storage_backend}'. Expected 'azure' or 's3'."
+    )
 
 
 def _parse_sync_max_files(value: str | None) -> int | None:
@@ -121,7 +138,7 @@ def main() -> None:
     strip_prefix = os.getenv("BLOB_STRIP_PREFIX", "wnba/").strip()
 
     github_client = build_default_client()
-    storage_client = build_storage_client_from_env()
+    storage_client = _build_storage_client_from_env()
 
     files = _collect_files_for_paths(github_client, base_paths=base_paths, branch=branch)
     if max_files is not None:
