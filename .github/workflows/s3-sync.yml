@@ -22,7 +22,7 @@ jobs:
       GITHUB_OWNER: sportsdataverse
       GITHUB_REPO: wehoop-wnba-data
       GITHUB_BRANCH: main
-      GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet
+      GITHUB_BASE_PATHS: wnba/team_box/parquet,wnba/player_box/parquet,wnba/schedules/parquet,wnba/player_season_stats/parquet,wnba/player_box/parquet,wnba/schedules/parquet
       BLOB_STRIP_PREFIX: wnba/
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_S3_BUCKET: ${{ vars.AWS_S3_BUCKET }}
@@ -42,20 +42,20 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Verify AWS identity
-        run: aws sts get-caller-identity
-
       - name: Print configuration
         run: |
+          echo "GITHUB_REF=${{ github.ref }}"
+          echo "GITHUB_SHA=${{ github.sha }}"
           echo "STORAGE_BACKEND=$STORAGE_BACKEND"
           echo "GITHUB_OWNER=$GITHUB_OWNER"
           echo "GITHUB_REPO=$GITHUB_REPO"
           echo "GITHUB_BRANCH=$GITHUB_BRANCH"
+          echo "GITHUB_BASE_PATHS=$GITHUB_BASE_PATHS"
           echo "AWS_REGION=$AWS_REGION"
           echo "AWS_S3_BUCKET=$AWS_S3_BUCKET"
           echo "AWS_S3_KEY_PREFIX=$AWS_S3_KEY_PREFIX"
