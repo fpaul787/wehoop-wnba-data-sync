@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
+import time
 from typing import Any
 
 from dotenv import load_dotenv
 import requests
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 
 GITHUB_API_BASE = "https://api.github.com"
@@ -35,10 +37,20 @@ class GitHubParquetFile:
 class GitHubClient:
     """Thin wrapper around the GitHub REST API."""
 
-    def __init__(self, owner: str, repo: str, token: str | None = None, timeout: int = 30) -> None:
+    def __init__(
+        self,
+        owner: str,
+        repo: str,
+        token: str | None = None,
+        timeout: int = 30,
+        max_retries: int = 3,
+        retry_delay_seconds: float = 60,
+    ) -> None:
         self.owner = owner
         self.repo = repo
         self.timeout = timeout
+        self.max_retries = max_retries
+        self.retry_delay_seconds = retry_delay_seconds
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -51,9 +63,29 @@ class GitHubClient:
             self.session.headers["Authorization"] = f"Bearer {token}"
 
     def _get_json(self, url: str) -> Any:
-        response = self.session.get(url, timeout=self.timeout)
-        response.raise_for_status()
-        return response.json()
+        last_error: Exception | None = None
+
+        for attempt in range(self.max_retries + 1):
+            try:
+                response = self.session.get(url, timeout=self.timeout)
+                response.raise_for_status()
+                return response.json()
+            except HTTPError as error:
+                status_code = error.response.status_code if error.response is not None else None
+                is_server_error = status_code is not None and 500 <= status_code < 600
+                if not is_server_error or attempt >= self.max_retries:
+                    raise
+                last_error = error
+            except (Timeout, ConnectionError) as error:
+                if attempt >= self.max_retries:
+                    raise
+                last_error = error
+
+            time.sleep(self.retry_delay_seconds)
+
+        if last_error is not None:
+            raise last_error
+        raise RuntimeError("Failed to fetch GitHub API response")
 
     def _list_contents(self, path: str, branch: str) -> list[dict[str, Any]]:
         encoded_path = path.strip("/")
