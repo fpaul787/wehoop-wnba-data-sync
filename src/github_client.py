@@ -87,9 +87,7 @@ class GitHubClient:
 
             time.sleep(self.retry_delay_seconds)
 
-        if last_error is not None:
-            raise last_error
-        raise RuntimeError("Failed to fetch GitHub API response")
+        raise RuntimeError("Failed to fetch GitHub API response") from last_error
 
     def _list_contents(self, path: str, branch: str) -> list[dict[str, Any]]:
         encoded_path = path.strip("/")
