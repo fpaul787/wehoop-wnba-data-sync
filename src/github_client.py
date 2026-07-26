@@ -49,6 +49,10 @@ class GitHubClient:
         self.owner = owner
         self.repo = repo
         self.timeout = timeout
+        if max_retries < 0:
+            raise ValueError("max_retries must be >= 0")
+        if retry_delay_seconds < 0:
+            raise ValueError("retry_delay_seconds must be >= 0")
         self.max_retries = max_retries
         self.retry_delay_seconds = retry_delay_seconds
         self.session = requests.Session()
