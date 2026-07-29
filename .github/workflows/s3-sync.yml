@@ -64,4 +64,22 @@ jobs:
       - name: Run sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python src/sync.py
+        run: |
+          set -o pipefail
+          python src/sync.py 2>&1 | tee sync-output.log
+
+      - name: Publish run summary
+        if: always()
+        run: |
+          {
+            echo "## WNBA S3 Sync - Run Summary"
+            echo
+            echo "### Sync stage output"
+            echo "\`\`\`text"
+            if [ -f sync-output.log ]; then
+              cat sync-output.log
+            else
+              echo "sync-output.log not found"
+            fi
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
