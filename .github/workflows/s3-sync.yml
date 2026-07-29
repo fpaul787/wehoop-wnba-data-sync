@@ -71,63 +71,10 @@ jobs:
       - name: Publish run summary
         if: always()
         run: |
-          SUMMARY_LINE=""
-          SUMMARY_JSON=""
-          if [ -f sync-output.log ]; then
-            SUMMARY_LINE=$(grep -E "sync_summary " sync-output.log | tail -n 1 || true)
-            if [ -n "$SUMMARY_LINE" ]; then
-              SUMMARY_JSON="${SUMMARY_LINE#*sync_summary }"
-            fi
-          fi
-
           {
             echo "## WNBA S3 Sync - Run Summary"
             echo
-            echo "### Run context"
-            echo "| Field | Value |"
-            echo "|---|---|"
-            echo "| Workflow | $GITHUB_WORKFLOW |"
-            echo "| Run number | $GITHUB_RUN_NUMBER |"
-            echo "| Trigger | $GITHUB_EVENT_NAME |"
-            echo "| Branch/Ref | $GITHUB_REF |"
-            echo "| Commit | $GITHUB_SHA |"
-            echo
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          if [ -n "$SUMMARY_JSON" ]; then
-            SUMMARY_JSON="$SUMMARY_JSON" python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-import json
-import os
-
-summary = json.loads(os.environ["SUMMARY_JSON"])
-rows = [
-    ("Total files scanned", summary.get("total_files_scanned", "n/a")),
-    ("New files uploaded", summary.get("new_files_uploaded", "n/a")),
-    ("Updated files uploaded", summary.get("updated_files_uploaded", "n/a")),
-    ("Files skipped", summary.get("files_skipped", "n/a")),
-    ("Files errored", summary.get("files_errored", "n/a")),
-    ("Execution time (seconds)", summary.get("execution_time_seconds", "n/a")),
-]
-
-print("### Sync metrics")
-print("| Metric | Value |")
-print("|---|---|")
-for label, value in rows:
-    print(f"| {label} | {value} |")
-print()
-PY
-          else
-            {
-              echo "### Sync metrics"
-              echo "Summary JSON not found in sync output."
-              echo
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-          {
-            echo "<details>"
-            echo "<summary>Full sync stage output</summary>"
-            echo
+            echo "### Sync stage output"
             echo "\`\`\`text"
             if [ -f sync-output.log ]; then
               cat sync-output.log
@@ -135,5 +82,4 @@ PY
               echo "sync-output.log not found"
             fi
             echo "\`\`\`"
-            echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
