@@ -64,4 +64,55 @@ jobs:
       - name: Run sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python src/sync.py
+        run: |
+          set -o pipefail
+          python src/sync.py 2>&1 | tee sync-output.log
+
+      - name: Publish run summary
+        if: always()
+        run: |
+          NEW_COUNT=0
+          UPDATED_COUNT=0
+          SKIPPED_COUNT=0
+          ERROR_COUNT=0
+          SYNC_SUMMARY_LINE="sync_summary line not found"
+
+          if [ -f sync-output.log ]; then
+            NEW_COUNT=$(grep -c "file_uploaded_new" sync-output.log || true)
+            UPDATED_COUNT=$(grep -c "file_uploaded_updated" sync-output.log || true)
+            SKIPPED_COUNT=$(grep -c "file_skipped_unchanged" sync-output.log || true)
+            ERROR_COUNT=$(grep -c "file_sync_error" sync-output.log || true)
+            SYNC_SUMMARY_LINE=$(grep -E "sync_summary " sync-output.log | tail -n 1 || true)
+            if [ -z "$SYNC_SUMMARY_LINE" ]; then
+              SYNC_SUMMARY_LINE="sync_summary line not found"
+            fi
+          fi
+
+          {
+            echo "## WNBA S3 Sync - Run Summary"
+            echo
+            echo "### Overview"
+            echo "| Metric | Value |"
+            echo "|---|---:|"
+            echo "| New uploads | $NEW_COUNT |"
+            echo "| Updated uploads | $UPDATED_COUNT |"
+            echo "| Skipped unchanged | $SKIPPED_COUNT |"
+            echo "| File errors | $ERROR_COUNT |"
+            echo
+            echo "### Final sync summary line"
+            echo "\`\`\`text"
+            echo "$SYNC_SUMMARY_LINE"
+            echo "\`\`\`"
+            echo
+            echo "<details>"
+            echo "<summary>Full sync stage output</summary>"
+            echo
+            echo "\`\`\`text"
+            if [ -f sync-output.log ]; then
+              cat sync-output.log
+            else
+              echo "sync-output.log not found"
+            fi
+            echo "\`\`\`"
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
